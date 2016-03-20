@@ -3,8 +3,20 @@
 in  vec2 vTexCoord;
 out vec4 FragColor;
 
+uniform BlobSettings {
+  vec4 InnerColor;
+  vec4 OuterColor;
+  float RadiusInner;
+  float RadiusOuter;
+};
+
 void main()
 {
     //FragColor = texture2D(gColorMap, vTexCoord);
-    FragColor = vec4 (1.0, 0.0, 0.0, 1.0);
+    //FragColor = vec4 (1.0, 0.0, 0.0, 1.0);
+
+    float dx = vTexCoord.x - 0.5;
+    float dy = vTexCoord.y - 0.5;
+    float dist = sqrt(dx * dx + dy * dy);
+    FragColor = mix(InnerColor, OuterColor, smoothstep( RadiusInner, RadiusOuter, dist));
 }

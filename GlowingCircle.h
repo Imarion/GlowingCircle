@@ -58,7 +58,7 @@ private:
 
     GLuint mVAO, mVBO, mIBO;
 
-    GLuint gMVPLocation;
+    GLuint blockIndexLocation;
 
     VertexTex     *mVertices;
     unsigned int  *mIndices;

@@ -12,6 +12,7 @@
 #include <QMatrix4x4>
 
 #include <cmath>
+#include <cstring>
 
 #include "vertex.h"
 
@@ -95,7 +96,8 @@ void MyWindow::initialize()
     CreateVertexBuffer();
     initShaders();
 
-    gMVPLocation      = mProgram->uniformLocation("gMVP");
+    //blockIndexLocation      = mProgram->uniformLocation("BlobSettings");
+    blockIndexLocation = mFuncs->glGetUniformBlockIndex(mProgram->programId(), "BlobSettings");
 
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
@@ -154,30 +156,32 @@ void MyWindow::render()
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Tree
-    glEnableVertexAttribArray(0);
-
-    glBindBuffer(GL_ARRAY_BUFFER, mVBO);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-
     static float Scale = 0.0f;
     Scale += 0.1f; // tut 12
 
-    QMatrix4x4 WVP, World;    
+    GLint blockSize;
+    mFuncs->glGetActiveUniformBlockiv(mProgram->programId(), blockIndexLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+    GLubyte *blockBuffer= new GLubyte[blockSize];
+    // Query for the offsets of each block variable
+    const GLchar *names[] = { "InnerColor", "OuterColor",
+                              "RadiusInner", "RadiusOuter" };
+    GLuint indices[4];
+    mFuncs->glGetUniformIndices(mProgram->programId(), 4, names, indices);
+    GLint offset[4];
+    mFuncs->glGetActiveUniformsiv(mProgram->programId(), 4, indices, GL_UNIFORM_OFFSET, offset);
+    GLfloat outerColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
+    GLfloat innerColor[] = {1.0f, 1.0f, 0.75f, 1.0f};
+    GLfloat innerRadius = 0.25f, outerRadius = 0.45f;
+    memcpy(blockBuffer + offset[0], innerColor, 4 * sizeof(GLfloat));
+    memcpy(blockBuffer + offset[1], outerColor, 4 * sizeof(GLfloat));
+    memcpy(blockBuffer + offset[2], &innerRadius, sizeof(GLfloat));
+    memcpy(blockBuffer + offset[3], &outerRadius, sizeof(GLfloat));
+    GLuint uboHandle;
+    glGenBuffers(1, &uboHandle);
+    glBindBuffer(GL_UNIFORM_BUFFER, uboHandle);
+    glBufferData(GL_UNIFORM_BUFFER, blockSize, blockBuffer, GL_DYNAMIC_DRAW);
+    mFuncs->glBindBufferBase(GL_UNIFORM_BUFFER, blockIndexLocation, uboHandle);
 
-    //World.translate(0.0f, 0.0f, 1.0f);
-    //World.translate(0.0f, 0.0f, Scale/10.0f);
-    World.rotate(Scale*2, 1.0f, 0.0f, 0.0f);
-    //mPointLight.setPosition(mPointLight.getPosition()-QVector3D(0.0f, 0.0f, Scale/1000.0f));
-
-    //WVP.perspective(60.0f, (float)this->width()/(float)this->height(), 1.0f, 100.0f);
-    //WVP.lookAt(cam.position(), QVector3D(0.0f, 0.0f, 0.0f), QVector3D(0.0f, 1.0f, 0.0f));
-    QMatrix4x4 CameraMat(WVP);
-
-    //PrintCoordOglDevOrig(QVector3D(0.0f,  0.0f, 0.0f), cam.position());
-    //PrintCoordMoiRightHanded(QVector3D(0.0f,  0.0f, 0.0f), cam.position());
-
-    //WVP *= World;
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
 
