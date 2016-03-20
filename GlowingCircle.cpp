@@ -109,10 +109,10 @@ void MyWindow::CreateVertexBuffer()
 {
     // C++11 required
     mVertices = new VertexTex[4] {
-        VertexTex(QVector3D( -0.5f,  -0.5f, 0.0f),  QVector2D(-1.0f, -1.0f)),
-        VertexTex(QVector3D(  0.5f,  -0.5f, 0.0f),  QVector2D( 1.0f, -1.0f)),
-        VertexTex(QVector3D(  0.5f,   0.5f, 0.0f),  QVector2D( 1.0f,  1.0f)),
-        VertexTex(QVector3D( -0.5f,   0.5f, 0.0f),  QVector2D(-1.0f,  1.0f))
+        VertexTex(QVector3D( -0.5f,  -0.5f, 0.0f),  QVector2D( 0.0f, 0.0f)),
+        VertexTex(QVector3D(  0.5f,  -0.5f, 0.0f),  QVector2D( 1.0f, 0.0f)),
+        VertexTex(QVector3D(  0.5f,   0.5f, 0.0f),  QVector2D( 1.0f, 1.0f)),
+        VertexTex(QVector3D( -0.5f,   0.5f, 0.0f),  QVector2D( 0.0f, 1.0f))
     };
 
     mIndices = new unsigned int[6] {
