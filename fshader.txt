@@ -4,8 +4,8 @@ in  vec2 vTexCoord;
 out vec4 FragColor;
 
 uniform BlobSettings {
-  vec4 InnerColor;
-  vec4 OuterColor;
+  vec4  InnerColor;
+  vec4  OuterColor;
   float RadiusInner;
   float RadiusOuter;
 };

@@ -36,6 +36,7 @@ private:
 
     void initShaders();
     void CreateVertexBuffer();
+    void initBlobSettings();
 
     void PrepareTexture(GLenum TextureTarget, const QString& FileName, GLuint& TexObject, bool flip);
 
@@ -56,9 +57,7 @@ private:
     double currentTimeS;
     bool   mUpdateSize;
 
-    GLuint mVAO, mVBO, mIBO;
-
-    GLuint blockIndexLocation;
+    GLuint mVAO, mVBO, mIBO, mUBO;
 
     VertexTex     *mVertices;
     unsigned int  *mIndices;

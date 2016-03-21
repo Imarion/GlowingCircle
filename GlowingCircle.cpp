@@ -16,16 +16,6 @@
 
 #include "vertex.h"
 
-#define NUM_VERTICES    36
-#define NUM_INDICES     36
-
-#define NUM_COLS        3
-#define NUM_ROWS        10
-#define NUM_TREES       NUM_COLS * NUM_ROWS
-//#define NUM_VERTICES    4
-//#define NUM_INDICES     6
-
-
 MyWindow::~MyWindow()
 {
     if (mVertices != 0)  delete[] mVertices;
@@ -95,9 +85,7 @@ void MyWindow::initialize()
 
     CreateVertexBuffer();
     initShaders();
-
-    //blockIndexLocation      = mProgram->uniformLocation("BlobSettings");
-    blockIndexLocation = mFuncs->glGetUniformBlockIndex(mProgram->programId(), "BlobSettings");
+    initBlobSettings();
 
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
@@ -129,6 +117,40 @@ void MyWindow::CreateVertexBuffer()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(mIndices[0])*6, mIndices, GL_STATIC_DRAW);
 }
 
+void MyWindow::initBlobSettings()
+{
+    GLuint blobSettingsLocation;
+    blobSettingsLocation = mFuncs->glGetUniformBlockIndex(mProgram->programId(), "BlobSettings");
+
+    GLint blockSize;
+    mFuncs->glGetActiveUniformBlockiv(mProgram->programId(), blobSettingsLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
+    GLubyte *blockBuffer= new GLubyte[blockSize];
+
+    // Query for the offsets of each block variable
+    const GLchar *names[] = { "InnerColor", "OuterColor", "RadiusInner", "RadiusOuter" };
+    GLuint indices[4];
+    mFuncs->glGetUniformIndices(mProgram->programId(), 4, names, indices);
+
+    GLint offset[4];
+    mFuncs->glGetActiveUniformsiv(mProgram->programId(), 4, indices, GL_UNIFORM_OFFSET, offset);
+
+    GLfloat outerColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
+    GLfloat innerColor[] = {1.0f, 1.0f, 0.75f, 1.0f};
+    GLfloat innerRadius = 0.25f, outerRadius = 0.45f;
+
+    memcpy(blockBuffer + offset[0], innerColor, 4 * sizeof(GLfloat));
+    memcpy(blockBuffer + offset[1], outerColor, 4 * sizeof(GLfloat));
+    memcpy(blockBuffer + offset[2], &innerRadius, sizeof(GLfloat));
+    memcpy(blockBuffer + offset[3], &outerRadius, sizeof(GLfloat));
+
+    glGenBuffers(1, &mUBO);
+    glBindBuffer(GL_UNIFORM_BUFFER, mUBO);
+    glBufferData(GL_UNIFORM_BUFFER, blockSize, blockBuffer, GL_DYNAMIC_DRAW);
+    mFuncs->glBindBufferBase(GL_UNIFORM_BUFFER, blobSettingsLocation, mUBO);
+
+    delete[] blockBuffer;
+}
+
 void MyWindow::resizeEvent(QResizeEvent *)
 {
     mUpdateSize = true;
@@ -158,29 +180,6 @@ void MyWindow::render()
 
     static float Scale = 0.0f;
     Scale += 0.1f; // tut 12
-
-    GLint blockSize;
-    mFuncs->glGetActiveUniformBlockiv(mProgram->programId(), blockIndexLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
-    GLubyte *blockBuffer= new GLubyte[blockSize];
-    // Query for the offsets of each block variable
-    const GLchar *names[] = { "InnerColor", "OuterColor",
-                              "RadiusInner", "RadiusOuter" };
-    GLuint indices[4];
-    mFuncs->glGetUniformIndices(mProgram->programId(), 4, names, indices);
-    GLint offset[4];
-    mFuncs->glGetActiveUniformsiv(mProgram->programId(), 4, indices, GL_UNIFORM_OFFSET, offset);
-    GLfloat outerColor[] = {0.0f, 0.0f, 0.0f, 0.0f};
-    GLfloat innerColor[] = {1.0f, 1.0f, 0.75f, 1.0f};
-    GLfloat innerRadius = 0.25f, outerRadius = 0.45f;
-    memcpy(blockBuffer + offset[0], innerColor, 4 * sizeof(GLfloat));
-    memcpy(blockBuffer + offset[1], outerColor, 4 * sizeof(GLfloat));
-    memcpy(blockBuffer + offset[2], &innerRadius, sizeof(GLfloat));
-    memcpy(blockBuffer + offset[3], &outerRadius, sizeof(GLfloat));
-    GLuint uboHandle;
-    glGenBuffers(1, &uboHandle);
-    glBindBuffer(GL_UNIFORM_BUFFER, uboHandle);
-    glBufferData(GL_UNIFORM_BUFFER, blockSize, blockBuffer, GL_DYNAMIC_DRAW);
-    mFuncs->glBindBufferBase(GL_UNIFORM_BUFFER, blockIndexLocation, uboHandle);
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
