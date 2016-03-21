@@ -3,6 +3,8 @@
 layout (location = 0) in vec3 Position;
 layout (location = 1) in vec2 TexCoord;
 
+uniform mat4 modelMatrix;
+
 out vec2 vTexCoord;
 
 void main()
@@ -11,5 +13,5 @@ void main()
     //gl_Position = gVP * vec4(Position, 1.0);
 
     vTexCoord = TexCoord;
-    gl_Position = vec4(Position, 1.0);
+    gl_Position = modelMatrix * vec4(Position, 1.0);
 }

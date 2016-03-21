@@ -58,6 +58,8 @@ private:
     bool   mUpdateSize;
 
     GLuint mVAO, mVBO, mIBO, mUBO;
+    GLuint modelMatrixLocation, glowFactorLocation;
+    QMatrix4x4 mModel4tri1, mModel4tri2, mModel4tri3;
 
     VertexTex     *mVertices;
     unsigned int  *mIndices;

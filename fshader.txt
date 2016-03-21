@@ -7,8 +7,10 @@ uniform BlobSettings {
   vec4  InnerColor;
   vec4  OuterColor;
   float RadiusInner;
-  float RadiusOuter;
+  float RadiusOuter;  
 };
+
+uniform float GlowFactor;
 
 void main()
 {
@@ -18,5 +20,5 @@ void main()
     float dx = vTexCoord.x - 0.5;
     float dy = vTexCoord.y - 0.5;
     float dist = sqrt(dx * dx + dy * dy);
-    FragColor = mix(InnerColor, OuterColor, smoothstep( RadiusInner, RadiusOuter, dist));
+    FragColor = mix(InnerColor, OuterColor, smoothstep( RadiusInner,  GlowFactor * RadiusOuter, dist));
 }

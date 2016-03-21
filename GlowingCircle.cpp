@@ -87,6 +87,16 @@ void MyWindow::initialize()
     initShaders();
     initBlobSettings();
 
+    modelMatrixLocation = mProgram->uniformLocation("modelMatrix");
+    mModel4tri1.translate(-0.5f, 0.5f, 0.0f);
+    mModel4tri1.scale(0.5f);
+
+    mModel4tri2.translate(0.5f, 0.5f, 0.0f);
+    mModel4tri2.scale(0.5f);
+
+    mModel4tri3.translate(0.0f, -0.5f, 0.0f);
+    mModel4tri3.scale(0.5f);
+
     glFrontFace(GL_CCW);
     glCullFace(GL_BACK);
     glEnable(GL_CULL_FACE);
@@ -121,6 +131,7 @@ void MyWindow::initBlobSettings()
 {
     GLuint blobSettingsLocation;
     blobSettingsLocation = mFuncs->glGetUniformBlockIndex(mProgram->programId(), "BlobSettings");
+    glowFactorLocation   = mProgram->uniformLocation("GlowFactor");
 
     GLint blockSize;
     mFuncs->glGetActiveUniformBlockiv(mProgram->programId(), blobSettingsLocation, GL_UNIFORM_BLOCK_DATA_SIZE, &blockSize);
@@ -179,7 +190,7 @@ void MyWindow::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     static float Scale = 0.0f;
-    Scale += 0.1f; // tut 12
+    Scale += 0.03f;
 
     glEnableVertexAttribArray(0);
     glEnableVertexAttribArray(1);
@@ -190,9 +201,16 @@ void MyWindow::render()
 
     mProgram->bind();
     {
-        //glUniformMatrix4fv(gMVPLocation,  1, GL_FALSE, cam.matrix().constData());
+        glUniform1f(glowFactorLocation, 1.0f);
+        glUniformMatrix4fv(modelMatrixLocation,  1, GL_FALSE, mModel4tri1.constData());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        //glDrawArrays(GL_TRIANGLES, 0, 4);
+        glUniform1f(glowFactorLocation, 0.6f);
+        glUniformMatrix4fv(modelMatrixLocation,  1, GL_FALSE, mModel4tri2.constData());
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+        glUniform1f(glowFactorLocation, fabs(sin(Scale)) * 0.4f + 0.6f);
+        glUniformMatrix4fv(modelMatrixLocation,  1, GL_FALSE, mModel4tri3.constData());
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
         glDisableVertexAttribArray(0);
